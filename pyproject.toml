@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "firecore-oneflow"
+version = "0.1.0"
+description = ""
+authors = ["SunDoge <384813529@qq.com>"]
+readme = "README.md"
+packages = [{include = "firecore_oneflow"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

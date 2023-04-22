@@ -3,7 +3,9 @@ from firecore.config import LazyCall
 from flowvision import transforms as T
 from oneflow import nn, optim
 from firecore_oneflow.optim.builder import get_params
-
+from oneflow.utils.data import DataLoader
+from flowvision.datasets.cifar import CIFAR10
+from firecore_oneflow.runners.epoch_based import 
 
 model = LazyCall(cifar_resnet20)(
     num_classes=10,
@@ -36,6 +38,37 @@ test_aug = LazyCall(T.Compose)(
         LazyCall(T.ToTensor)(),
         normalize,
     ]
+)
+
+train_set = LazyCall(CIFAR10)(
+    root='data/cifar10',
+    train=True,
+    transform=train_aug,
+    download=True
+)
+
+test_set = LazyCall(CIFAR10)(
+    root='data/cifar10',
+    train=False,
+    transform=test_aug,
+    download=True
+)
+
+
+train_loader = LazyCall(DataLoader)(
+    dataset=train_set,
+    batch_size=128,
+    num_workers=2,
+    drop_last=True,
+    shuffle=True
+)
+
+test_loader = LazyCall(DataLoader)(
+    dataset=test_set,
+    batch_size=128,
+    num_workers=2,
+    shuffle=False,
+    drop_last=False,
 )
 
 train_runner = LazyCall

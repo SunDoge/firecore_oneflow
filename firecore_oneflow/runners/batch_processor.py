@@ -2,13 +2,13 @@ from typing import Optional, List, Dict, Union
 import oneflow as flow
 from oneflow import Tensor
 from firecore.adapter import adapt
+import pysnooper
 
 
 class BatchProcessor:
-
     def __init__(
         self,
-        device: flow.device = flow.device('cpu'),
+        device: flow.device = flow.device("cpu"),
         names: Optional[List[str]] = None,
         batch_size_key: Optional[str] = None,
         batch_size_index: int = 0,
@@ -20,7 +20,9 @@ class BatchProcessor:
         self._batch_size_index = batch_size_index
         self._rules = rules
 
-    def rename(self, batch: Union[List[Tensor], Dict[str, Tensor]]) -> Dict[str, Tensor]:
+    def rename(
+        self, batch: Union[List[Tensor], Dict[str, Tensor]]
+    ) -> Dict[str, Tensor]:
         if self._names:
             batch = self.name_batch(batch)
 
@@ -43,7 +45,4 @@ class BatchProcessor:
         return batch_size
 
     def copy_host_to_device(self, batch: Dict[str, Tensor]):
-        return {
-            k: v.to(self._device, non_blocking=True)
-            for k, v in batch.items()
-        }
+        return {k: v.to(self._device) for k, v in batch.items()}

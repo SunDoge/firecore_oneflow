@@ -34,3 +34,8 @@ class GraphBuilder:
 
     def build_test_graph(self):
         pass
+
+    def forward(self, **inputs):
+        outputs = self.model(**inputs)
+        losses = self.criterion(**outputs, **inputs)
+        return outputs, losses

@@ -3,7 +3,8 @@ import firecore
 from firecore.config.lazy import LazyConfig
 from firecore.config.instantiate import instantiate
 from icecream import ic
-from firecore_oneflow.module.builder import GraphBuilder
+from firecore_oneflow.model.builder import GraphBuilder
+from firecore_oneflow.runners.base import BaseRunner
 
 
 @ta.argument_parser()
@@ -32,13 +33,14 @@ def main():
         lr_scheduler_cfg=cfg.lr_scheduler,
     )
 
-    test_runner = instantiate(
+    test_runner: BaseRunner = instantiate(
         cfg.test_runner,
+        forward_fn=graph_builder.forward,
         model=graph_builder.model,
     )
 
     if args.eval_only:
-        pass
+        test_runner.step(0)
 
 
 if __name__ == "__main__":

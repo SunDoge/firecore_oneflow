@@ -6,18 +6,30 @@ from firecore_oneflow.optim.builder import get_params
 from oneflow.utils.data import DataLoader
 from flowvision.datasets.cifar import CIFAR10
 from firecore_oneflow.runners.epoch_based import EpochBasedRunner
-from firecore_oneflow.module.builder import GraphBuilder
+from firecore_oneflow.model.builder import GraphBuilder
+from firecore_oneflow import hooks
+from firecore_oneflow.runners.batch_processor import BatchProcessor
+from firecore_oneflow.metrics.collection import MetricCollection
+from firecore_oneflow.losses import LossWrapper
+from firecore_oneflow.model.base import ModelWrapper
 
-model = LazyCall(cifar_resnet20)(
-    num_classes=10,
+model = LazyCall(ModelWrapper)(
+    model=LazyCall(cifar_resnet20)(
+        num_classes=10,
+    ),
+    in_rules={"image": "x"},
+    out_names=["output"],
 )
-criterion = LazyCall(nn.CrossEntropyLoss)()
+criterion = LazyCall(LossWrapper)(
+    loss_fn=LazyCall(nn.CrossEntropyLoss)(),
+    in_rules={"output": "input", "target": "target"},
+    out_name="loss_cls",
+)
 optimizer = LazyCall(optim.SGD)(
     params=LazyCall(get_params)(model=None),
     lr=0.1,
 )
 lr_scheduler = LazyCall(optim.lr_scheduler.MultiStepLR)(milestones=[100, 150])
-
 
 
 normalize = LazyCall(T.Normalize)(
@@ -61,6 +73,22 @@ test_loader = LazyCall(DataLoader)(
     drop_last=False,
 )
 
-train_runner = LazyCall(EpochBasedRunner)(hooks=[])
+train_metrics = LazyCall(MetricCollection)(metrics=dict())
+test_metrics = LazyCall(MetricCollection)(metrics=dict())
 
-test_runner = LazyCall(EpochBasedRunner)(hooks=[])
+batch_processor = LazyCall(BatchProcessor)(names=["image", "target"])
+
+train_runner = LazyCall(EpochBasedRunner)(
+    hooks=[
+        LazyCall(hooks.TrainingHook)(),
+    ]
+)
+
+test_runner = LazyCall(EpochBasedRunner)(
+    data_source=test_loader,
+    metrics=test_metrics,
+    batch_processor=batch_processor,
+    hooks=[
+        LazyCall(hooks.InferenceHook)(),
+    ],
+)

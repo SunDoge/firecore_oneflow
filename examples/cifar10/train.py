@@ -16,6 +16,8 @@ def main():
     ic(args)
     cfg = LazyConfig.load(args.config_file)
     ic(cfg)
+
+    
     
 
 if __name__ == '__main__':

@@ -1,16 +1,22 @@
 from oneflow import nn
 from firecore_oneflow.optim.builder import build_optimizer
 from firecore.config.instantiate import instantiate
+from icecream import ic
 
 
 class GraphBuilder:
     def __init__(
         self,
-        model: nn.Module,
+        model_cfg=None,
+        criterion_cfg=None,
         optimizer_cfg=None,
         lr_scheduler_cfg=None,
     ) -> None:
-        self.model = model
+        ic(model_cfg)
+        assert model_cfg
+        assert criterion_cfg
+        self.model: nn.Module = instantiate(model_cfg)
+        self.criterion: nn.Module = instantiate(criterion_cfg)
 
         if optimizer_cfg:
             self.optimizer = build_optimizer(optimizer_cfg, self.model)

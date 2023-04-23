@@ -2,12 +2,13 @@ from .base import BaseRunner
 from typing import List
 from firecore_oneflow.hooks.base import BaseHook
 from .batch_processor import BatchProcessor
-
+from icecream import ic
 
 class EpochBasedRunner(BaseRunner):
 
     def __init__(self, hooks: List[BaseHook], **kwargs) -> None:
         super().__init__(hooks, **kwargs)
+        ic([(k, type(v)) for k,v in kwargs.items()])
 
     def step(self, epoch: int):
         return super().step(epoch)

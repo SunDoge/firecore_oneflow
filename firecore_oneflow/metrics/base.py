@@ -3,7 +3,6 @@ import oneflow as flow
 from typing import Dict, Optional, Union
 from firecore.adapter import adapt
 import logging
-from firecore.adapter import adapt
 
 logger = logging.getLogger(__name__)
 

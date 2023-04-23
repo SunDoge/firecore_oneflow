@@ -8,3 +8,6 @@ class TextLoggerHook(BaseHook):
     ) -> None:
         super().__init__()
         self._interval = interval
+
+
+    

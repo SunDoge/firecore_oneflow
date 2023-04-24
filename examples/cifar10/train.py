@@ -5,6 +5,9 @@ from firecore.config.instantiate import instantiate
 from icecream import ic
 from firecore_oneflow.model.builder import GraphBuilder
 from firecore_oneflow.runners.base import BaseRunner
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 @ta.argument_parser()
@@ -18,11 +21,12 @@ class Args(ta.TypedArgs):
 
 
 def main():
+    firecore.logging.init()
     args = Args.parse_args()
     ic(args)
     cfg = LazyConfig.load(args.config_file)
     # ic(cfg)
-
+    logger.info(f"{cfg}")
     if args.fast_dev:
         pass
 
@@ -42,7 +46,6 @@ def main():
     if args.eval_only:
         test_runner.step(0)
         pass
-
 
 
 if __name__ == "__main__":

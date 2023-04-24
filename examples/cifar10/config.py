@@ -98,5 +98,6 @@ test_runner = LazyCall(EpochBasedRunner)(
     batch_processor=batch_processor,
     hooks=[
         LazyCall(hooks.InferenceHook)(),
+        LazyCall(hooks.TextLoggerHook)(stage="test", interval=1),
     ],
 )

@@ -24,9 +24,11 @@ class EpochBasedRunner(BaseRunner):
         epoch: int,
         **kwargs
     ):
+        epoch_length = len(data_source)
         self.call_hook(
-            "before_iter",
+            "before_epoch",
             epoch=epoch,
+            epoch_length=epoch_length,
         )
 
         for batch_idx, batch in enumerate(data_source):
@@ -34,6 +36,7 @@ class EpochBasedRunner(BaseRunner):
                 "before_iter",
                 epoch=epoch,
                 batch_idx=batch_idx,
+                epoch_length=epoch_length,
             )
 
             batch_as_dict = batch_processor.rename(batch)
@@ -45,27 +48,44 @@ class EpochBasedRunner(BaseRunner):
                 epoch=epoch,
                 batch_idx=batch_idx,
                 batch_size=batch_size,
+                epoch_length=epoch_length,
                 **batch_on_device,
             )
 
             outputs, losses = self.call_method(forward_fn, **batch_on_device)
-
-            with flow.no_grad():
-                metrics.update_adapted(
-                    **batch_on_device,
-                    **outputs,
-                    **losses,
-                    batch_size=batch_size,
-                )
 
             self.call_hook(
                 "after_forward",
                 epoch=epoch,
                 batch_idx=batch_idx,
                 batch_size=batch_size,
+                epoch_length=epoch_length,
                 **batch_on_device,
                 **outputs,
                 **losses,
             )
 
-        print(metrics.display())
+            metrics.update_adapted(
+                **batch_on_device,
+                **outputs,
+                **losses,
+                batch_size=batch_size,
+                epoch_length=epoch_length,
+            )
+
+            self.call_hook(
+                "after_iter",
+                epoch=epoch,
+                batch_idx=batch_idx,
+                batch_size=batch_size,
+                epoch_length=epoch_length,
+                **batch_on_device,
+                **outputs,
+                **losses,
+            )
+
+        self.call_hook(
+            "after_epoch",
+            epoch=epoch,
+            epoch_length=epoch_length,
+        )

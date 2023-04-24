@@ -4,6 +4,7 @@ from typing import Dict, Optional, Union
 from firecore.adapter import adapt
 import logging
 from oneflow import nn
+import oneflow as flow
 
 logger = logging.getLogger(__name__)
 
@@ -30,12 +31,14 @@ class BaseMetric(nn.Module):
     def reset(self):
         pass
 
+    @flow.no_grad()
     def update_adapted(self, **kwargs):
         # print(kwargs.keys())
         self._cached_result = None
         new_kwargs = adapt(kwargs, self._in_rules)
         self.update(**new_kwargs)
 
+    @flow.no_grad()
     def compute_adapted(self):
         if self._cached_result is None:
             self._cached_result = self.compute()

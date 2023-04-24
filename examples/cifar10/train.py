@@ -41,6 +41,8 @@ def main():
 
     if args.eval_only:
         test_runner.step(0)
+        pass
+
 
 
 if __name__ == "__main__":

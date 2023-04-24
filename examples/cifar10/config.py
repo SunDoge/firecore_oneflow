@@ -10,8 +10,11 @@ from firecore_oneflow.model.builder import GraphBuilder
 from firecore_oneflow import hooks
 from firecore_oneflow.runners.batch_processor import BatchProcessor
 from firecore_oneflow.metrics.collection import MetricCollection
+from firecore_oneflow.metrics.accuracy import Accuracy
+from firecore_oneflow.metrics.average import Average
 from firecore_oneflow.losses import LossWrapper
 from firecore_oneflow.model.base import ModelWrapper
+from omegaconf import DictConfig
 
 model = LazyCall(ModelWrapper)(
     model=LazyCall(cifar_resnet20)(
@@ -74,7 +77,12 @@ test_loader = LazyCall(DataLoader)(
 )
 
 train_metrics = LazyCall(MetricCollection)(metrics=dict())
-test_metrics = LazyCall(MetricCollection)(metrics=dict())
+test_metrics = LazyCall(MetricCollection)(
+    metrics=dict(
+        acc=LazyCall(Accuracy)(topk=[1, 5]),
+        loss=LazyCall(Average)(in_rules={"loss_cls": "val", "batch_size": "n"}),
+    ),
+)
 
 batch_processor = LazyCall(BatchProcessor)(names=["image", "target"])
 

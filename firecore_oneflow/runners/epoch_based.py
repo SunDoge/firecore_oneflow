@@ -4,6 +4,7 @@ from firecore_oneflow.hooks.base import BaseHook
 from .batch_processor import BatchProcessor
 from icecream import ic
 from firecore_oneflow.metrics.collection import MetricCollection
+import oneflow as flow
 
 
 class EpochBasedRunner(BaseRunner):
@@ -49,7 +50,13 @@ class EpochBasedRunner(BaseRunner):
 
             outputs, losses = self.call_method(forward_fn, **batch_on_device)
 
-            return
+            with flow.no_grad():
+                metrics.update_adapted(
+                    **batch_on_device,
+                    **outputs,
+                    **losses,
+                    batch_size=batch_size,
+                )
 
             self.call_hook(
                 "after_forward",
@@ -60,3 +67,5 @@ class EpochBasedRunner(BaseRunner):
                 **outputs,
                 **losses,
             )
+
+        print(metrics.display())

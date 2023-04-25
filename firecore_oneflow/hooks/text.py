@@ -37,7 +37,7 @@ class TextLoggerHook(BaseHook):
             prefix = f"{self._stage} {batch_idx + 1}/{epoch_length} {rate:.1f} spl/s"
 
             logger.info(f"{prefix} {metric_outputs}")
-            print(metric_outputs)
+            # print(metric_outputs)
 
     def after_epoch(
         self, epoch: int, metrics: MetricCollection, max_epochs: int, **kwargs

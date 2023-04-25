@@ -16,6 +16,13 @@ from firecore_oneflow.losses import LossWrapper
 from firecore_oneflow.model.base import ModelWrapper
 from omegaconf import DictConfig
 
+
+hparams = DictConfig(
+    dict(
+        max_epochs=200,
+    )
+)
+
 model = LazyCall(ModelWrapper)(
     model=LazyCall(cifar_resnet20)(
         num_classes=10,
@@ -65,7 +72,11 @@ test_set = LazyCall(CIFAR10)(
 
 
 train_loader = LazyCall(DataLoader)(
-    dataset=train_set, batch_size=128, num_workers=2, drop_last=True, shuffle=True
+    dataset=train_set,
+    batch_size=128,
+    num_workers=2,
+    drop_last=True,
+    shuffle=True,
 )
 
 test_loader = LazyCall(DataLoader)(
@@ -76,20 +87,36 @@ test_loader = LazyCall(DataLoader)(
     drop_last=False,
 )
 
-train_metrics = LazyCall(MetricCollection)(metrics=dict())
+
+loss_metric = (
+    LazyCall(Average)(
+        in_rules={"loss_cls": "val", "batch_size": "n"},
+        out_rules={"avg": "loss"},
+    ),
+)
+
+train_metrics = LazyCall(MetricCollection)(
+    metrics=dict(
+        loss=loss_metric,
+    )
+)
 test_metrics = LazyCall(MetricCollection)(
     metrics=dict(
         acc=LazyCall(Accuracy)(topk=[1, 5]),
-        loss=LazyCall(Average)(in_rules={"loss_cls": "val", "batch_size": "n"}),
+        loss=loss_metric,
     ),
 )
 
 batch_processor = LazyCall(BatchProcessor)(names=["image", "target"])
 
 train_runner = LazyCall(EpochBasedRunner)(
+    data_source=train_loader,
+    metrics=train_metrics,
+    batch_processor=batch_processor,
     hooks=[
         LazyCall(hooks.TrainingHook)(),
-    ]
+        LazyCall(hooks.TextLoggerHook)(stage="train", interval=1),
+    ],
 )
 
 test_runner = LazyCall(EpochBasedRunner)(

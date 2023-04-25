@@ -41,7 +41,7 @@ class EpochBasedRunner(BaseRunner):
 
             batch_as_dict = batch_processor.rename(batch)
             batch_size = batch_processor.get_batch_size(batch_as_dict)
-            batch_on_device = batch_processor.copy_host_to_device(batch_as_dict)
+            batch_on_device = batch_processor.to_global(batch_as_dict)
 
             self.call_hook(
                 "before_forward",

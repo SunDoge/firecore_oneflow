@@ -8,13 +8,16 @@ import pysnooper
 class BatchProcessor:
     def __init__(
         self,
-        device: flow.device = flow.device("cpu"),
+        # device: flow.device = flow.device("cpu"),
+        placement: flow.placement = flow.placement("cpu", [0]),
+        sbp: flow.sbp = flow.sbp.broadcast,
         names: Optional[List[str]] = None,
         batch_size_key: Optional[str] = None,
         batch_size_index: int = 0,
         rules: Optional[Dict[str, str]] = None,
     ) -> None:
-        self._device = device
+        self._placement = placement
+        self._sbp = sbp
         self._names = names
         self._batch_size_key = batch_size_key
         self._batch_size_index = batch_size_index
@@ -44,5 +47,11 @@ class BatchProcessor:
         batch_size = tensor.size(self._batch_size_index)
         return batch_size
 
-    def copy_host_to_device(self, batch: Dict[str, Tensor]):
-        return {k: v.to(self._device) for k, v in batch.items()}
+    # def copy_host_to_device(self, batch: Dict[str, Tensor]):
+    #     return {k: v.to(self._device) for k, v in batch.items()}
+
+    def to_global(self, batch: Dict[str, Tensor]):
+        return {
+            k: v.to_global(placement=self._placement, sbp=self._sbp)
+            for k, v in batch.items()
+        }

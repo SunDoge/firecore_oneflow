@@ -41,11 +41,22 @@ def main():
         cfg.test_runner,
         forward_fn=graph_builder.forward,
         model=graph_builder.model,
+        max_epochs=cfg.hparams.max_epochs,
     )
 
     if args.eval_only:
         test_runner.step(0)
         pass
+
+    train_runner: BaseRunner = instantiate(
+        cfg.train_runner,
+        forward_fn=graph_builder.forward,
+        max_epochs=cfg.hparams.max_epochs,
+    )
+
+    for epoch in range(cfg.hparams.max_epochs):
+        train_runner.step(epoch)
+        test_runner.step(epoch)
 
 
 if __name__ == "__main__":
